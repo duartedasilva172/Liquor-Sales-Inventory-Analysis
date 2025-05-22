@@ -97,3 +97,5 @@ Supports business storytelling through KPIs and interactivity
 ➡️ View the Tableau Dashboard: [Insert Tableau Public Link]
 📂 Explore the SQL Source Code: liquor_reordered.sql
 📸 See dashboard screenshots: /visuals
+📂 The raw liquor sales dataset used in this project is available here:  
+🔗 [https://www.kaggle.com/datasets/fatemehmohammadinia/retail-sales-data-set-of-alcohol-and-liquor]
