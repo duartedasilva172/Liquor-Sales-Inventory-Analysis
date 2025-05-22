@@ -1,0 +1,108 @@
+# 🧪 Liquor Reordered Case Study – Challenges & Fixes Log
+
+This document logs real challenges encountered while building and cleaning the `liquor_reordered` dataset for Tableau dashboarding, and the solutions implemented to address them.
+
+---
+
+## 🧩 Challenge #1 – Missing Supplier Values
+
+**Issue:** Some records had `NULL` values for `SUPPLIER`, which would interfere with grouping and filtering.
+
+**Fix:** Replaced all `NULL` values in `SUPPLIER` with the placeholder `'Not Recorded'` to retain row integrity while signaling incomplete data.
+
+```sql
+UPDATE [dbo].[db_liquor]
+SET SUPPLIER = 'Not Recorded'
+WHERE SUPPLIER IS NULL;
+```
+
+---
+
+## 🧩 Challenge #2 – Missing ITEM\_TYPE Data
+
+**Issue:** `ITEM_TYPE` values were missing for some rows, impacting analysis by category.
+
+**Fix:** Used conditional logic based on `ITEM_CODE` to fill in known values. For example, code 347939 was classified as 'WINE'.
+
+```sql
+UPDATE db_liquor
+SET ITEM_TYPE = 'WINE'
+WHERE ITEM_TYPE IS NULL AND ITEM_CODE = 347939;
+```
+
+---
+
+## 🧩 Challenge #3 – Incomplete Date Formatting
+
+**Issue:** Original data lacked a proper date field for visualization in Tableau.
+
+**Fix:** Created a `full_date` column using `DATEFROMPARTS(YEAR, MONTH, 1)` to ensure all rows had a valid, consistent date.
+
+```sql
+ALTER TABLE db_liquor ADD full_date DATE;
+UPDATE db_liquor
+SET full_date = DATEFROMPARTS(YEAR, MONTH, 1);
+```
+
+---
+
+## 🧩 Challenge #4 – Negative Total Sales
+
+**Issue:** Some rows had a negative sum of sales across channels, which disrupted visualizations and skewed insights.
+
+**Fix:** Initially set negative totals to `0` and captured the negative values in a new `net_loss` column.
+
+```sql
+ALTER TABLE liquor_reordered ADD net_loss FLOAT;
+UPDATE liquor_reordered
+SET
+  total_sales = CASE
+    WHEN retail_sales + retail_transfers + warehouse_sales < 0 THEN 0
+    ELSE retail_sales + retail_transfers + warehouse_sales
+  END,
+  net_loss = CASE
+    WHEN retail_sales + retail_transfers + warehouse_sales < 0
+    THEN retail_sales + retail_transfers + warehouse_sales
+  END;
+```
+
+---
+
+## 🧩 Challenge #5 – Timeline Gaps in Tableau
+
+**Issue:** Suppressing negative `total_sales` created gaps in the monthly timeline when visualized in Tableau.
+
+**Fix:** Reverted `total_sales` to reflect real values (including negatives) and added two new columns: `net_loss` and `net_positive_sales` to separately analyze positive and negative performance.
+
+```sql
+ALTER TABLE liquor_reordered
+ADD net_loss DECIMAL(18,2),
+    net_positive_sales DECIMAL(18,2);
+
+UPDATE liquor_reordered
+SET
+  net_loss = CASE
+    WHEN total_sales < 0 THEN ABS(total_sales)
+    ELSE 0
+  END,
+  net_positive_sales = CASE
+    WHEN total_sales > 0 THEN total_sales
+    ELSE 0
+  END;
+```
+
+---
+
+## 🧩 Challenge #6 – CSV Export Truncation from Azure
+
+**Issue:** CSV exports from the Azure portal were limited to 50,000 rows, despite the full table having 307,645 rows.
+
+**Fix:** Switched to **Azure Data Studio**, which allowed full-query export and saved the complete dataset for Tableau integration.
+
+---
+
+## ✅ Summary
+
+These issues were caught and corrected through a structured troubleshooting process, which enhanced the dataset's reliability, preserved time-series continuity, and enabled more insightful visual analysis in Tableau.
+
+> Keeping a log like this improves documentation quality, builds storytelling credibility, and becomes a reusable artifact for future projects or interviews.
