@@ -18,7 +18,7 @@ WHERE SUPPLIER IS NULL;
 
 ---
 
-## 🧩 Challenge #2 – Missing ITEM\_TYPE Data
+## 🧩 Challenge #2 – Missing ITEM_TYPE Data
 
 **Issue:** `ITEM_TYPE` values were missing for some rows, impacting analysis by category.
 
