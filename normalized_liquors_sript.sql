@@ -1,6 +1,7 @@
--- Create a normalized liquor type reference within the existing table
+-- OBJECTIVE: Create a normalized liquor type reference within the existing table
 
 SELECT * FROM [liquor_inventory_simulated] 
+WHERE item_type = 'LIQUOR' 
 -- Preview all data where item_type is 'LIQUOR'
 
 ALTER TABLE [liquor_inventory_simulated] 
